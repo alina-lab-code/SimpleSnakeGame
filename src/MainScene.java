@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 import java.util.Random;
 
 public class MainScene extends JPanel implements ActionListener {
-
+//hello this is test for connection to git
     // Жесткие размеры игрового поля
     private final int BOARD_WIDTH = 600;
     private final int BOARD_HEIGHT = 600;
