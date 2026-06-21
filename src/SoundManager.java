@@ -38,7 +38,7 @@ public class SoundManager {
         stop();
         if (clip != null) {
             clip.setFramePosition(0); // Rewind to start
-            clip.start();
+            clip.start(); // Start playing
         }
     }
 }

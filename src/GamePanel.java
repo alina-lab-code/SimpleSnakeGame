@@ -10,7 +10,10 @@ public class GamePanel extends JPanel implements ActionListener {
     private Apple apple;
     private int score;
     private boolean running;
+    private boolean paused; // Pause state
     private Timer timer;
+    private long startTime; //  counting seconds
+    private long pausedTime; //  track pause duration
 
     // IMAGES
     private Image backgroundImage;
@@ -24,7 +27,7 @@ public class GamePanel extends JPanel implements ActionListener {
         setFocusable(true);
 
         soundManager = new SoundManager();
-        soundManager.playLoop(); // Music starts playing
+        soundManager.playLoop();
 
 
         try {
@@ -40,37 +43,65 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
 
-
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 Snake snake = getSnake();
 
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT:  snake.setDirection('L'); break;
-                    case KeyEvent.VK_RIGHT: snake.setDirection('R'); break;
-                    case KeyEvent.VK_UP:    snake.setDirection('U'); break;
-                    case KeyEvent.VK_DOWN:  snake.setDirection('D'); break;
-                    case KeyEvent.VK_SPACE:
-                        if (!isRunning()) {
-                            restart();
-                        }
-                        break;
+                // Only allow movement if game is running and NOT paused
+                if (running && !paused) {
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_LEFT:  snake.setDirection('L'); break;
+                        case KeyEvent.VK_RIGHT: snake.setDirection('R'); break;
+                        case KeyEvent.VK_UP:    snake.setDirection('U'); break;
+                        case KeyEvent.VK_DOWN:  snake.setDirection('D'); break;
+                    }
+                }
+
+                // Handle Pause (P key)
+                if (e.getKeyCode() == KeyEvent.VK_P) {
+                    togglePause();
+                }
+
+                // Handle Restart (Space)
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    if (!running) {
+                        restart();
+                    }
                 }
             }
         });
-
 
         snake = new Snake();
         apple = new Apple(appleImage);
         apple.generateNewPosition(snake);
         score = 0;
         running = true;
+        paused = false;
+        startTime = System.currentTimeMillis(); // Start the clock
+        pausedTime = 0;
 
         timer = new Timer(GameConstants.DELAY, this);
         timer.start();
 
         requestFocusInWindow();
+    }
+
+    // Toggle pause state
+    private void togglePause() {
+        if (running) {
+            paused = !paused;
+            if (paused) {
+                // When pausing, record the time
+                pausedTime = System.currentTimeMillis();
+                soundManager.stop(); // Stop music on pause
+            } else {
+                // When resuming, adjust start time so the timer doesn't count pause duration
+                long pauseDuration = System.currentTimeMillis() - pausedTime;
+                startTime += pauseDuration;
+                soundManager.playLoop(); // Resume music
+            }
+        }
     }
 
     @Override
@@ -88,15 +119,41 @@ public class GamePanel extends JPanel implements ActionListener {
             apple.draw(g);
             snake.draw(g);
 
-            g.setColor(new Color(0, 0, 0, 150));
-            g.fillRect(0, 0, GameConstants.BOARD_WIDTH, 30);
 
+            g.setColor(new Color(0, 0, 0, 150));
+            g.fillRect(0, 0, GameConstants.BOARD_WIDTH, 35);
+
+            // Score (Left side)
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 20));
-            FontMetrics metrics = getFontMetrics(g.getFont());
-            g.drawString("Score: " + score,
-                    (GameConstants.BOARD_WIDTH - metrics.stringWidth("Score: " + score)) / 2,
-                    g.getFont().getSize() + 5);
+            g.setFont(new Font("Arial", Font.BOLD, 18));
+            g.drawString("Score: " + score, 15, 25);
+
+            // Timer (Right side)
+            if (!paused) {
+                long elapsedMillis = System.currentTimeMillis() - startTime;
+                long seconds = (elapsedMillis / 1000) % 60;
+                long minutes = (elapsedMillis / (1000 * 60)) % 60;
+                String timeString = String.format(" Time: %02d:%02d", minutes, seconds);
+                FontMetrics metrics = getFontMetrics(g.getFont());
+                g.drawString(timeString, GameConstants.BOARD_WIDTH - metrics.stringWidth(timeString) - 15, 25);
+            } else {
+                // Show "PAUSED" and the time when paused
+                g.setColor(Color.YELLOW);
+                g.setFont(new Font("Arial", Font.BOLD, 18));
+                long elapsedMillis = System.currentTimeMillis() - startTime;
+                long seconds = (elapsedMillis / 1000) % 60;
+                long minutes = (elapsedMillis / (1000 * 60)) % 60;
+                String timeString = String.format("Pause  %02d:%02d", minutes, seconds);
+                FontMetrics metrics = getFontMetrics(g.getFont());
+                g.drawString(timeString, GameConstants.BOARD_WIDTH - metrics.stringWidth(timeString) - 15, 25);
+            }
+
+
+            // Pause hint text
+            g.setColor(new Color(255, 255, 255, 100));
+            g.setFont(new Font("Arial", Font.PLAIN, 12));
+            g.drawString("Press P to pause the game", 15, GameConstants.BOARD_HEIGHT - 15);
+
         } else {
             showGameOver(g);
         }
@@ -104,7 +161,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running) {
+        if (running && !paused) { // Only move if not paused
             snake.move();
 
             if (snake.eat(apple)) {
@@ -115,9 +172,7 @@ public class GamePanel extends JPanel implements ActionListener {
             if (snake.checkCollision()) {
                 running = false;
                 timer.stop();
-
-                soundManager.stop(); // Stop music on game over
-
+                soundManager.stop();
             }
         }
         repaint();
@@ -132,14 +187,25 @@ public class GamePanel extends JPanel implements ActionListener {
         FontMetrics metrics1 = getFontMetrics(g.getFont());
         g.drawString("Game over",
                 (GameConstants.BOARD_WIDTH - metrics1.stringWidth("Game over")) / 2,
-                GameConstants.BOARD_HEIGHT / 2 - 50);
+                GameConstants.BOARD_HEIGHT / 2 - 60);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 30));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("score: " + score,
+        g.drawString("Score: " + score,
                 (GameConstants.BOARD_WIDTH - metrics2.stringWidth("Score: " + score)) / 2,
-                GameConstants.BOARD_HEIGHT / 2 + 50);
+                GameConstants.BOARD_HEIGHT / 2);
+
+        // Show final time
+        long elapsedMillis = System.currentTimeMillis() - startTime;
+        long seconds = (elapsedMillis / 1000) % 60;
+        long minutes = (elapsedMillis / (1000 * 60)) % 60;
+        String timeString = String.format("Time: %02d:%02d", minutes, seconds);
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString(timeString,
+                (GameConstants.BOARD_WIDTH - metrics3.stringWidth(timeString)) / 2,
+                GameConstants.BOARD_HEIGHT / 2 + 60);
     }
 
     public boolean isRunning() {
@@ -152,13 +218,13 @@ public class GamePanel extends JPanel implements ActionListener {
         apple.generateNewPosition(snake);
         score = 0;
         running = true;
+        paused = false;
+        startTime = System.currentTimeMillis(); // Reset timer
+        pausedTime = 0;
         timer.start();
+        soundManager.restart();
         repaint();
         requestFocusInWindow();
-
-
-        soundManager.restart(); //Rewind and play music again
-
     }
 
     public Snake getSnake() {
