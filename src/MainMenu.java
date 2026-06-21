@@ -117,7 +117,7 @@ public class MainMenu extends JFrame {
         JOptionPane.showMessageDialog(
                 this,
                 instructions,
-                "Инструкция",
+                "Instructions",
                 JOptionPane.INFORMATION_MESSAGE,
                 new ImageIcon()
         );
@@ -126,7 +126,7 @@ public class MainMenu extends JFrame {
 
     private void startGame() {
         //  create the game frame
-        JFrame gameFrame = new JFrame("Змейка");
+        JFrame gameFrame = new JFrame("Simple snake game");
         GamePanel gamePanel = new GamePanel();
 
         gameFrame.add(gamePanel);
