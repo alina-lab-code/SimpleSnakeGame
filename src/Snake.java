@@ -12,9 +12,9 @@ public class Snake {
         direction = 'R';
         alive = true;
 
-        // first position
-        for (int i = 0; i < 6; i++) {
-            body.add(new Point((6 - i) * GameConstants.UNIT_SIZE, 0));
+        // Start with only 2 segments (Head + 1 Tail)
+        for (int i = 0; i < 2; i++) {
+            body.add(new Point((2 - i) * GameConstants.UNIT_SIZE, 0));
         }
     }
 
@@ -41,14 +41,12 @@ public class Snake {
     public boolean checkCollision() {
         Point head = body.get(0);
 
-        // Столкновение с границами
         if (head.getX() < 0 || head.getX() >= GameConstants.BOARD_WIDTH ||
                 head.getY() < 0 || head.getY() >= GameConstants.BOARD_HEIGHT) {
             alive = false;
             return true;
         }
 
-        // Столкновение с собственным телом
         for (int i = 1; i < body.size(); i++) {
             if (head.equals(body.get(i))) {
                 alive = false;
@@ -81,8 +79,9 @@ public class Snake {
         for (int i = 0; i < body.size(); i++) {
             Point p = body.get(i);
             if (i == 0) {
-                g.setColor(Color.GREEN); // head
-                g.setColor(new Color(82, 238, 30)); // Тело
+                g.setColor(Color.GREEN);
+            } else {
+                g.setColor(new Color(45, 180, 0));
             }
             g.fillRect(p.getX(), p.getY(), GameConstants.UNIT_SIZE, GameConstants.UNIT_SIZE);
         }

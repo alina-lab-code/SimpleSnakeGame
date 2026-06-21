@@ -6,18 +6,16 @@ public class Apple {
     private Random random;
     private Image appleImage;
 
-    //creating an apple
-
     public Apple(Image appleImage) {
         random = new Random();
         position = new Point(0, 0);
         this.appleImage = appleImage;
     }
-//snake position on board
+
     public void generateNewPosition(Snake snake) {
         int newX, newY;
         boolean validPosition;
-// snake within board
+
         do {
             validPosition = true;
             newX = random.nextInt(GameConstants.BOARD_WIDTH / GameConstants.UNIT_SIZE) * GameConstants.UNIT_SIZE;
@@ -34,7 +32,7 @@ public class Apple {
         position.setX(newX);
         position.setY(newY);
     }
-//drawing apple
+
     public void draw(Graphics g) {
         if (appleImage != null) {
             g.drawImage(appleImage, position.getX(), position.getY(),
