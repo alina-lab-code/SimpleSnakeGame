@@ -9,7 +9,8 @@ public class Snake {
 
     public Snake() {
         body = new ArrayList<>();
-        direction = 'R';
+        // first direction
+        direction = 'D';
         alive = true;
 
         // Start with only 2 segments (Head + 1 Tail)
@@ -40,13 +41,13 @@ public class Snake {
 
     public boolean checkCollision() {
         Point head = body.get(0);
-
+//check if snake crashed into the wall
         if (head.getX() < 0 || head.getX() >= GameConstants.BOARD_WIDTH ||
                 head.getY() < 0 || head.getY() >= GameConstants.BOARD_HEIGHT) {
             alive = false;
             return true;
         }
-
+//check if snake crashed its own body
         for (int i = 1; i < body.size(); i++) {
             if (head.equals(body.get(i))) {
                 alive = false;
@@ -56,7 +57,7 @@ public class Snake {
 
         return false;
     }
-
+    // eat apples
     public boolean eat(Apple apple) {
         Point head = body.get(0);
         if (head.equals(apple.getPosition())) {
@@ -74,7 +75,7 @@ public class Snake {
             direction = newDirection;
         }
     }
-
+//draw snake body
     public void draw(Graphics g) {
         for (int i = 0; i < body.size(); i++) {
             Point p = body.get(i);

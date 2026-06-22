@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private Image appleImage;
 
     private SoundManager soundManager;
-
+//game panel window
     public GamePanel() {
         setPreferredSize(new Dimension(GameConstants.BOARD_WIDTH, GameConstants.BOARD_HEIGHT));
         setBackground(Color.BLACK);
@@ -98,7 +98,7 @@ public class GamePanel extends JPanel implements ActionListener {
         startTime = System.currentTimeMillis();
         pausedTime = 0;
     }
-
+// pause the game
     private void togglePause() {
         if (running) {
             paused = !paused;
@@ -165,7 +165,7 @@ public class GamePanel extends JPanel implements ActionListener {
             showGameOver(g);
         }
     }
-
+//check if apple was eaten
     @Override
     public void actionPerformed(ActionEvent e) {
         if (running && !paused) {

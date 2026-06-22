@@ -16,7 +16,7 @@ public class MainMenu extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         panel.setBackground(new Color(30, 30, 30));
-
+//grid of the game
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
